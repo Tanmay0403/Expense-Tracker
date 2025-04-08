@@ -16,6 +16,8 @@ import ExpenseTable from './ExpenseTable';
 import EditExpense from './EditExpense';
 import SearchBar from './SearchBar';
 import DeletePopup from './DeletePopup';
+import ExpenseLineChart from './ExpenseLineChart';
+import ExpensesPieChart from './ExpensesPieChart';
 
 const CalculateExpenseContainer = () => {
   const [isAddBudgetPopupVisible, setAddBudgetPopupVisible] = useState(false);
@@ -31,15 +33,21 @@ const CalculateExpenseContainer = () => {
   const [showDeletePopup, setShowDeletePopup] = useState(false);
   const [deleteId, setDeleteId] = useState(null);
 
+  const [selectedCategory, setSelectedCategory] = useState("All");
+  const filteredExpenses = selectedCategory === "All"
+    ? expenses
+    : expenses.filter(exp => exp.category === selectedCategory);
 
 
-  useEffect(() => {
-    const storedBudget = localStorage.getItem("Budget") || 0;
-    const storedExpenses = JSON.parse(localStorage.getItem("expenses")) || [];
 
-    setBudget(Number(storedBudget));
-    setExpenses(storedExpenses);
-  }, []);
+
+    useEffect(() => {
+      const storedBudget = localStorage.getItem("Budget") || 0;
+      const storedExpenses = JSON.parse(localStorage.getItem("expenses")) || [];
+      setBudget(Number(storedBudget));
+      setExpenses(storedExpenses);
+    }, []);
+    
 
   //component lifecycle
   useEffect(() => {
@@ -120,22 +128,53 @@ const CalculateExpenseContainer = () => {
 
         <div className="primary-buttons mt-10 flex flex-row gap-3">
           <SearchBar />
-          <CategoryCards icon={food} button_name="Food and Drinks" />
-          <CategoryCards icon={groceries} button_name="Groceries" />
-          <CategoryCards icon={travel} button_name="Travel" />
-          <CategoryCards icon={health} button_name="Health" />
+          <ButtonCards title="All Expenses" handleClick={() => setSelectedCategory("All")} />
+          <CategoryCards
+            icon={food}
+            button_name="Food and Drinks"
+            onClick={setSelectedCategory}
+            isActive={selectedCategory === "Food and Drinks"}
+          />
+
+          <CategoryCards
+            icon={groceries}
+            button_name="Groceries"
+            onClick={setSelectedCategory}
+            isActive={selectedCategory === "Groceries"}
+          />
+
+          <CategoryCards
+            icon={travel}
+            button_name="Travel"
+            onClick={setSelectedCategory}
+            isActive={selectedCategory === "Travel"}
+          />
+
+          <CategoryCards
+            icon={health}
+            button_name="Health"
+            onClick={setSelectedCategory}
+            isActive={selectedCategory === "Health"}
+          />
+
           <ButtonCards
-            title="Add Budget"
+            title="+ Add Budget"
             handleClick={() => setAddBudgetPopupVisible(true)}
           />
           <ButtonCards
-            title="Add Expense"
+            title="+ Add Expense"
             handleClick={() => setAddExpensePopupVisible(true)}
           />
         </div>
 
+        <div className="mt-10 flex flex-row">
+          <ExpensesPieChart transactions={expenses} />
+          <ExpenseLineChart transactions={expenses} />
+        </div>
+
+
         <ExpenseTable
-          expenses={expenses}
+          expenses={filteredExpenses}
           onEdit={(expense) => {
             setExpenseToEdit(expense);
             setEditPopupVisible(true);
